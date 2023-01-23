@@ -10,7 +10,6 @@ const int httpsPort = 443;
 WiFiClientSecure client;
 
 byte tries = 15;
-int pressure = 0;
 
 
 void setup() {
@@ -22,33 +21,36 @@ void setup() {
 	delay(100);
 	Serial.println();
 	Serial.println();
-	connectWifi();
+	// connectWifi();
   
 }
 
 void loop() {
-	bool correctData = sensor();
-	digitalWrite(LED_BUILTIN, 0);
+	// bool correctData = sensor();
+	// digitalWrite(LED_BUILTIN, 0);
 	delay(20);
-	bool cnct = checkConnection();
+	delay(500);
+	// bool cnct = checkConnection();
 	
-	if (!cnct) {
-		digitalWrite(LED_BUILTIN, 1);
-		connectWifi();
-	} else {
-		if (correctData){
-			digitalWrite(LED_BUILTIN, 0);
+	// if (!cnct) {
+		// digitalWrite(LED_BUILTIN, 1);
+		// connectWifi();
+	// } else {
+		// if (correctData){
+			// digitalWrite(LED_BUILTIN, 0);
 			Serial.println();
 			Serial.print("Pressure: ");
-			Serial.println(pressure);
+			Serial.println(calculateBar(digitalRead(A0)));
 			Serial.println();
 			
-			sendData();
+			// sendData();
 			
-			// ESP.deepSleep(935e6); // every 15 min
-			ESP.deepSleep(15e6);  // every 15 sec
-		}
-	}
+			// // ESP.deepSleep(935e6); // every 15 min
+			// ESP.deepSleep(15e6);  // every 15 sec
+		// }
+	// }
+	
+	
 }
 
 bool sensor(){
@@ -129,4 +131,10 @@ void sendData() {
 	// Serial.println("==========");
 	Serial.println();
 	digitalWrite(LED_BUILTIN, 0);
+}
+
+float calculateBar(int dt){
+	// y=−3.1667x3+29.7143x2+83.7381x+114.8571 из bar в данные
+	// y=−0.0000x2+0.0062x−0.3512    из данных в bar
+	return (float)-0.0000 * (dt * dt) + 0.0062 * dt - 0.3512;
 }
