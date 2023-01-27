@@ -12,50 +12,9 @@ WiFiClientSecure client;
 byte tries = 15;
 
 
-void setup() {
-	Serial.begin(115200);
-	pinMode(A0, INPUT);
-	WiFi.begin(ssid, password);
-	pinMode(LED_BUILTIN, OUTPUT);
-
-	delay(100);
-	Serial.println();
-	Serial.println();
-	// connectWifi();
-  
-}
-
-void loop() {
-	// bool correctData = sensor();
-	// digitalWrite(LED_BUILTIN, 0);
-	delay(20);
-	delay(500);
-	// bool cnct = checkConnection();
-	
-	// if (!cnct) {
-		// digitalWrite(LED_BUILTIN, 1);
-		// connectWifi();
-	// } else {
-		// if (correctData){
-			// digitalWrite(LED_BUILTIN, 0);
-			Serial.println();
-			Serial.print("Pressure: ");
-			Serial.println(calculateBar(digitalRead(A0)));
-			Serial.println();
-			
-			// sendData();
-			
-			// // ESP.deepSleep(935e6); // every 15 min
-			// ESP.deepSleep(15e6);  // every 15 sec
-		// }
-	// }
-	
-	
-}
-
 bool sensor(){
 	digitalWrite(LED_BUILTIN, 1);
-	digitalWrite(pinPower, 1);
+	// digitalWrite(pinPower, 1);
 	delay(2000);
 	// check for connection
 	bool connectSns = true;
@@ -65,6 +24,7 @@ bool sensor(){
 	return connectSns;
 }
 
+// connect to wifi net
 void connectWifi(){
 	Serial.print("Connecting");
 	while (--tries && WiFi.status() != WL_CONNECTED) {
@@ -92,14 +52,16 @@ bool checkConnection(){
 	return WiFi.status() == WL_CONNECTED;
 }
 
-void sendData() {
+
+// record data to google table
+void sendData(float barPres) {
 	digitalWrite(LED_BUILTIN, 1);
 	if (!client.connect(host, httpsPort)) {
 		Serial.println("connection failed");
 		return;
 	}
 	
-	String string_pressure =  String(pressure);
+	String string_pressure =  String(barPres);
 	String url = "/macros/s/" + GAS_ID + "/exec?pressure=" + string_pressure;
 	// Serial.print("requesting URL: ");
 	// Serial.println(url);
@@ -133,8 +95,51 @@ void sendData() {
 	digitalWrite(LED_BUILTIN, 0);
 }
 
+// calculating numbers from manometer to bar
 float calculateBar(int dt){
+	Serial.println(dt);
 	// y=−3.1667x3+29.7143x2+83.7381x+114.8571 из bar в данные
 	// y=−0.0000x2+0.0062x−0.3512    из данных в bar
 	return (float)-0.0000 * (dt * dt) + 0.0062 * dt - 0.3512;
+}
+
+void setup() {
+	Serial.begin(115200);
+	pinMode(A0, INPUT);
+	WiFi.begin(ssid, password);
+	pinMode(LED_BUILTIN, OUTPUT);
+
+	delay(100);
+	Serial.println();
+	Serial.println();
+	// connectWifi();
+  
+}
+
+void loop() {
+	// bool correctData = sensor();
+	// digitalWrite(LED_BUILTIN, 0);
+	delay(20);
+	delay(500);
+	// bool cnct = checkConnection();
+	
+	// if (!cnct) {
+		// digitalWrite(LED_BUILTIN, 1);
+		// connectWifi();
+	// } else {
+		// if (correctData){
+			// digitalWrite(LED_BUILTIN, 0);
+			Serial.println();
+			Serial.print("Pressure: ");
+			Serial.println(calculateBar(analogRead(A0)));
+			Serial.println();
+			
+			// sendData();
+			
+			// // ESP.deepSleep(935e6); // every 15 min
+			// ESP.deepSleep(15e6);  // every 15 sec
+		// }
+	// }
+	
+	
 }
