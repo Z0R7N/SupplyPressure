@@ -95,12 +95,46 @@ void sendData(float barPres) {
 	digitalWrite(LED_BUILTIN, 0);
 }
 
-// calculating numbers from manometer to bar
+// calculating method
+float calculating(int maxNum, int minNum, int dt, int minBar){
+	int different = dt - minNum;
+	float result = (float) different / (maxNum - minNum);
+	return (float) result + minBar;
+}
+
+// calculating data from manometer to bar
 float calculateBar(int dt){
+	Serial.print("data: ");
 	Serial.println(dt);
-	// y=−3.1667x3+29.7143x2+83.7381x+114.8571 из bar в данные
-	// y=−0.0000x2+0.0062x−0.3512    из данных в bar
-	return (float)-0.0000 * (dt * dt) + 0.0062 * dt - 0.3512;
+	// data for calculating bar from manometer data
+	int dt0 = 104;
+	int dt1 = 206;
+	int dt2 = 365;
+	int dt3 = 540;
+	int dt4 = 700;
+	int dt5 = 855;
+	int dt6 = 988;
+	float res = -1;
+	res = dt > dt6 ? 7 : res;
+	if (dt >= dt0 and dt <= dt1) {
+		res = calculating(dt1, dt0, dt, 0);
+	}
+	else if(dt > dt1 and dt <= dt2){
+		res = calculating(dt2, dt1, dt, 1);
+	}
+	else if(dt > dt2 and dt <= dt3){
+		res = calculating(dt3, dt2, dt, 2);
+	}
+	else if(dt > dt3 and dt <= dt4){
+		res = calculating(dt4, dt3, dt, 3);
+	}
+	else if(dt > dt4 and dt <= dt5){
+		res = calculating(dt5, dt4, dt, 4);
+	}
+	else if(dt > dt5 and dt <= dt6){
+		res = calculating(dt6, dt5, dt, 5);
+	}
+	return res;
 }
 
 void setup() {
@@ -120,7 +154,7 @@ void loop() {
 	// bool correctData = sensor();
 	// digitalWrite(LED_BUILTIN, 0);
 	delay(20);
-	delay(500);
+	delay(1500);
 	// bool cnct = checkConnection();
 	
 	// if (!cnct) {
