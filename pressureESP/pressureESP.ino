@@ -15,7 +15,7 @@ byte tries = 15;
 bool sensor(){
 	digitalWrite(LED_BUILTIN, 1);
 	// digitalWrite(pinPower, 1);
-	delay(1000);
+	delay(500);
 	// check for connection
 	bool connectSns = true;
 
@@ -138,6 +138,29 @@ float calculateBar(int dt){
 	return res;
 }
 
+// average value calculation
+int middleData(){
+	int cnt = 0;
+	int maxCnt = 0;
+	int dataPres = 0;
+	int res = -1;
+	long sumPress;
+	while(maxCnt < 20){
+		maxCnt++;
+		dataPres = analogRead(A0);
+		if (dataPres >= 106 and dataPres <= 988) {
+			sumPress += dataPres;
+			cnt++;
+		}
+		if (cnt = 6) {
+			res = round (sumPress / cnt);
+			break;
+		}
+	}
+	return res;
+}
+
+
 void setup() {
 	Serial.begin(115200);
 	pinMode(A0, INPUT);
@@ -155,7 +178,7 @@ void loop() {
 	bool correctData = sensor();
 	digitalWrite(LED_BUILTIN, 0);
 	delay(20);
-	delay(5000);
+	delay(1000);
 	bool cnct = checkConnection();
 	
 	// if (!cnct) {
@@ -164,11 +187,12 @@ void loop() {
 	// } else {
 		if (correctData){
 			digitalWrite(LED_BUILTIN, 0);
-			float br = calculateBar(analogRead(A0));
+			float midBar = calculateBar(middleData());
 			Serial.println();
 			Serial.print("Pressure: ");
-			Serial.println(br);
+			Serial.println(midBar);
 			Serial.println();
+			
 			
 			// sendData(br);
 			
