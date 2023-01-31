@@ -4,7 +4,7 @@
 const char* ssid = "DIR-3";
 // const char* password =  "3!r@fdQX";
 const char* password =  "GL543jkl";
-String GAS_ID = "your code for google sheets";
+String GAS_ID = "your gas id";
 const char* host = "script.google.com";
 const int httpsPort = 443;
 WiFiClientSecure client;
@@ -15,7 +15,7 @@ byte tries = 15;
 bool sensor(){
 	digitalWrite(LED_BUILTIN, 1);
 	// digitalWrite(pinPower, 1);
-	delay(2000);
+	delay(1000);
 	// check for connection
 	bool connectSns = true;
 
@@ -62,7 +62,7 @@ void sendData(float barPres) {
 	}
 	
 	String string_pressure =  String(barPres);
-	String url = "/macros/s/" + GAS_ID + "/exec?pressure=" + string_pressure;
+	String url = "/macros/s/" + GAS_ID + "/exec?press=" + string_pressure;
 	// Serial.print("requesting URL: ");
 	// Serial.println(url);
 
@@ -107,7 +107,7 @@ float calculateBar(int dt){
 	Serial.print("data: ");
 	Serial.println(dt);
 	// data for calculating bar from manometer data
-	int dt0 = 104;
+	int dt0 = 106;
 	int dt1 = 206;
 	int dt2 = 365;
 	int dt3 = 540;
@@ -116,6 +116,7 @@ float calculateBar(int dt){
 	int dt6 = 988;
 	float res = -1;
 	res = dt > dt6 ? 7 : res;
+	res = dt < dt0 ? 0 : res;
 	if (dt >= dt0 and dt <= dt1) {
 		res = calculating(dt1, dt0, dt, 0);
 	}
@@ -151,28 +152,29 @@ void setup() {
 }
 
 void loop() {
-	// bool correctData = sensor();
-	// digitalWrite(LED_BUILTIN, 0);
+	bool correctData = sensor();
+	digitalWrite(LED_BUILTIN, 0);
 	delay(20);
-	delay(1500);
-	// bool cnct = checkConnection();
+	delay(5000);
+	bool cnct = checkConnection();
 	
 	// if (!cnct) {
 		// digitalWrite(LED_BUILTIN, 1);
 		// connectWifi();
 	// } else {
-		// if (correctData){
-			// digitalWrite(LED_BUILTIN, 0);
+		if (correctData){
+			digitalWrite(LED_BUILTIN, 0);
+			float br = calculateBar(analogRead(A0));
 			Serial.println();
 			Serial.print("Pressure: ");
-			Serial.println(calculateBar(analogRead(A0)));
+			Serial.println(br);
 			Serial.println();
 			
-			// sendData();
+			// sendData(br);
 			
 			// // ESP.deepSleep(935e6); // every 15 min
 			// ESP.deepSleep(15e6);  // every 15 sec
-		// }
+		}
 	// }
 	
 	
