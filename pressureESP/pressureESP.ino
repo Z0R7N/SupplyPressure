@@ -1,9 +1,9 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 
-const char* ssid = "DIR-3";
-// const char* password =  "3!r@fdQX";
-const char* password =  "GL543jkl";
+const char* ssid = "DIR-1";
+const char* password =  "3!r@fdQX";
+// const char* password =  "GL543jkl";
 String GAS_ID = "your gas id";
 const char* host = "script.google.com";
 const int httpsPort = 443;
@@ -18,9 +18,11 @@ bool sensor(){
 	delay(500);
 	// check for connection
 	bool connectSns = true;
-
-	
-
+	if (analogRead(A0) == 0) {
+		connectSns = false;
+		Serial.print("manometr is not connect, data: ");
+		Serial.println(analogRead(A0));
+	}
 	return connectSns;
 }
 
@@ -49,6 +51,8 @@ void connectWifi(){
 }
 
 bool checkConnection(){
+	Serial.print("wifi status: ");
+	Serial.println(WL_CONNECTED);
 	return WiFi.status() == WL_CONNECTED;
 }
 
@@ -144,7 +148,7 @@ int middleData(){
 	int maxCnt = 0;
 	int dataPres = 0;
 	int res = -1;
-	long sumPress;
+	long sumPress = 0;
 	while(maxCnt < 20){
 		maxCnt++;
 		dataPres = analogRead(A0);
@@ -152,11 +156,20 @@ int middleData(){
 			sumPress += dataPres;
 			cnt++;
 		}
-		if (cnt = 6) {
+		if (cnt == 6) {
 			res = round (sumPress / cnt);
 			break;
 		}
 	}
+	return res;
+}
+
+// method for analise data from manometr
+float analise(float midBar){
+	float res = midBar;
+	
+	
+	
 	return res;
 }
 
@@ -166,40 +179,36 @@ void setup() {
 	pinMode(A0, INPUT);
 	WiFi.begin(ssid, password);
 	pinMode(LED_BUILTIN, OUTPUT);
-
 	delay(100);
 	Serial.println();
 	Serial.println();
-	// connectWifi();
-  
+	connectWifi();
 }
 
 void loop() {
 	bool correctData = sensor();
-	digitalWrite(LED_BUILTIN, 0);
+	digitalWrite(LED_BUILTIN, 1);
 	delay(20);
-	delay(1000);
+	delay(2500);
 	bool cnct = checkConnection();
-	
-	// if (!cnct) {
-		// digitalWrite(LED_BUILTIN, 1);
-		// connectWifi();
-	// } else {
-		if (correctData){
-			digitalWrite(LED_BUILTIN, 0);
-			float midBar = calculateBar(middleData());
-			Serial.println();
-			Serial.print("Pressure: ");
-			Serial.println(midBar);
-			Serial.println();
-			
-			
-			// sendData(br);
-			
-			// // ESP.deepSleep(935e6); // every 15 min
-			// ESP.deepSleep(15e6);  // every 15 sec
-		}
-	// }
+	if (correctData){
+		digitalWrite(LED_BUILTIN, 0);
+		float midBar = calculateBar(middleData());
+		Serial.println();
+		Serial.print("Pressure: ");
+		Serial.println(midBar);
+		Serial.println();
+	}
+	if (!cnct) {
+		digitalWrite(LED_BUILTIN, 1);
+		connectWifi();
+	} else {
+		Serial.println("record data to table");
+		Serial.println("---------------------");
+		Serial.println("");
+		Serial.println("");
+		// sendData(midBar);
+	}
 	
 	
 }
