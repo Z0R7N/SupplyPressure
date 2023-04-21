@@ -64,7 +64,7 @@ void sendData(float barPres) {
 		Serial.println("connection failed");
 		return;
 	}
-	
+
 	String string_pressure =  String(barPres);
 	String url = "/macros/s/" + GAS_ID + "/exec?press=" + string_pressure;
 	// Serial.print("requesting URL: ");
@@ -207,7 +207,13 @@ void loop() {
 		Serial.println("---------------------");
 		Serial.println("");
 		Serial.println("");
-		// sendData(midBar);
+		if (midBar < 1) {
+			sendData(midBar);
+		} else {
+			Serial.print("no record, bar = ");
+			Serial.println(midBar);
+			Serial.println("");
+		}
 	}
 	
 	
