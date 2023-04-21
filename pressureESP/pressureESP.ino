@@ -4,7 +4,8 @@
 const char* ssid = "DIR-1";
 const char* password =  "3!r@fdQX";
 // const char* password =  "GL543jkl";
-String GAS_ID = "your gas id";
+// String GAS_ID = "your gas id";
+
 const char* host = "script.google.com";
 const int httpsPort = 443;
 WiFiClientSecure client;
@@ -64,9 +65,9 @@ void sendData(float barPres) {
 		Serial.println("connection failed");
 		return;
 	}
-
+	
 	String string_pressure =  String(barPres);
-	String url = "/macros/s/" + GAS_ID + "/exec?press=" + string_pressure;
+	String url = "/macros/s/" + GAS_ID + "/exec?pres=" + string_pressure;
 	// Serial.print("requesting URL: ");
 	// Serial.println(url);
 
@@ -187,13 +188,13 @@ void setup() {
 
 void loop() {
 	bool correctData = sensor();
+	float midBar = 0;
 	digitalWrite(LED_BUILTIN, 1);
 	delay(20);
-	delay(2500);
 	bool cnct = checkConnection();
 	if (correctData){
 		digitalWrite(LED_BUILTIN, 0);
-		float midBar = calculateBar(middleData());
+		midBar = calculateBar(middleData());
 		Serial.println();
 		Serial.print("Pressure: ");
 		Serial.println(midBar);
@@ -203,18 +204,21 @@ void loop() {
 		digitalWrite(LED_BUILTIN, 1);
 		connectWifi();
 	} else {
-		Serial.println("record data to table");
-		Serial.println("---------------------");
-		Serial.println("");
-		Serial.println("");
-		if (midBar < 1) {
-			sendData(midBar);
-		} else {
-			Serial.print("no record, bar = ");
-			Serial.println(midBar);
-			Serial.println("");
+		if (correctData){
+			if (midBar < 1) {
+				Serial.print("record data to table = ");
+				Serial.println(midBar);
+				Serial.println("---------------------");
+				Serial.println("");
+				Serial.println("");
+				sendData(midBar);
+			} else {
+				Serial.print("no record, pressure = ");
+				Serial.println(midBar);
+				Serial.println("");
+				Serial.println("");
+			}
 		}
 	}
-	
-	
+	delay(65000);
 }
