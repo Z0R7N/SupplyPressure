@@ -2,15 +2,16 @@
 #include <WiFiClientSecure.h>
 
 const char* ssid = "DIR-1";
-const char* password =  "3!r@fdQX";
-// const char* password =  "GL543jkl";
-// String GAS_ID = "your gas id";
+
+const char* password =  "GL543jkl";
+String GAS_ID = "your gas id";
 
 const char* host = "script.google.com";
 const int httpsPort = 443;
 WiFiClientSecure client;
 
 byte tries = 15;
+byte errorConnection = 0; // if esp can not to connect 3 time must be reset
 
 
 bool sensor(){
@@ -51,18 +52,35 @@ void connectWifi(){
 	}
 }
 
+//declare a function reset with address 0
+void(* resetFunc) (void) = 0;
+
 bool checkConnection(){
 	Serial.print("wifi status: ");
 	Serial.println(WL_CONNECTED);
+	if (WL_CONNECTED != 3) errorConnection++;
+	if (errorConnection > 3) {
+		Serial.println("reset in method checkConnection");
+		Serial.println();
+		ESP.restart();
+		resetFunc();
+	}
 	return WiFi.status() == WL_CONNECTED;
 }
-
 
 // record data to google table
 void sendData(float barPres) {
 	digitalWrite(LED_BUILTIN, 1);
 	if (!client.connect(host, httpsPort)) {
-		Serial.println("connection failed");
+		Serial.print(errorConnection);
+		Serial.println(" connection failed");
+		errorConnection++;
+		if (errorConnection > 3) {
+		Serial.println("reset in method sendData");
+		Serial.println();
+		ESP.restart();
+		resetFunc();
+	}
 		return;
 	}
 	
@@ -205,7 +223,7 @@ void loop() {
 		connectWifi();
 	} else {
 		if (correctData){
-			if (midBar < 1) {
+			if (midBar < 0.5) {
 				Serial.print("record data to table = ");
 				Serial.println(midBar);
 				Serial.println("---------------------");
